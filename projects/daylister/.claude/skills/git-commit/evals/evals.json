@@ -1,0 +1,41 @@
+{
+  "skill_name": "git-commit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to test the git-commit skill. First, create a test scenario: Create a login form file called login.tsx with an email validation bug that needs fixing. Then simulate the fix by editing the file to add proper email validation. Make sure this is the only change. Then commit using the git-commit skill with work item ID #987654. Save COMMIT.md to the project root.",
+      "expected_output": "A git commit with message '#987654 Fix login email validation' (or similar, under 50 chars) and a COMMIT.md entry recording the change with project name, branch, changed files, and summary.",
+      "files": [],
+      "expectations": [
+        "A git commit was created with a message starting with #987654",
+        "The commit message is under 50 characters total",
+        "COMMIT.md was created or updated with an entry at the top",
+        "The COMMIT.md entry includes Project, Branch, Changed files, and Summary sections",
+        "Only the login-related file(s) were staged (not unrelated files)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to test the git-commit skill's handling of missing work item IDs. First, add a simple comment to the App.tsx file and stage it. Then try to commit using the git-commit skill, but tell the skill you don't have a work item ID right now. Record what happens.",
+      "expected_output": "The skill should ask the user for a work item ID instead of guessing one or committing without it.",
+      "files": [],
+      "expectations": [
+        "The skill did not proceed with a commit using an invented work item ID",
+        "The user was asked to provide a work item ID before proceeding"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to test the git-commit skill with multiple file changes. First create these changes on a new branch called feat/csv-export:\n1. Create a new file src/utils/exportCsv.ts with a function to export data as CSV\n2. Modify a todo component file (like TodoList.tsx) to add a download button\n3. Stage both changes.\nThen switch back to the main branch and commit using the git-commit skill with work item ID #456789. Save COMMIT.md to the project root.",
+      "expected_output": "A git commit with message '#456789 Add CSV export feature' (or similar, under 50 chars) and a COMMIT.md entry listing both the new file and modified file with a summary of the feature.",
+      "files": [],
+      "expectations": [
+        "A git commit was created with a message starting with #456789",
+        "The commit message is under 50 characters total",
+        "COMMIT.md was created or updated with an entry at the top",
+        "The COMMIT.md entry lists all changed files (both new and modified)",
+        "The Summary describes the feature intent, not just the file list"
+      ]
+    }
+  ]
+}

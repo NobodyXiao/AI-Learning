@@ -3,34 +3,59 @@ import { Layout, Spin } from 'antd';
 import { ChatHeader } from '../components/ChatHeader';
 import { ChatMessage } from '../components/ChatMessage';
 import { ChatInput } from '../components/ChatInput';
-import { streamChatMessage } from '../utils/api';
+import { streamChatMessage, fetchModels } from '../utils/api';
 import type { Message } from '../types/chat';
+import type { ModelGroup } from '../utils/api';
 
 interface HomeProps {
   isDark: boolean;
   onToggleTheme: () => void;
 }
 
-let msgId = 1;
-const welcome: Message = {
-  id: String(msgId++),
-  role: 'assistant',
-  content: "Hi! I'm Simple Chatter. Ask me anything or just say hello!",
-  timestamp: Date.now(),
-};
+const msgIdRef = { current: 1 };
+function createWelcome(): Message {
+  return {
+    id: String(msgIdRef.current++),
+    role: 'assistant',
+    content: "Hi! I'm Simple Chatter. Ask me anything or just say hello!",
+    timestamp: Date.now(),
+  };
+}
 
 export default function Home({ isDark, onToggleTheme }: HomeProps) {
-  const [messages, setMessages] = useState<Message[]>([welcome]);
+  const [messages, setMessages] = useState<Message[]>([createWelcome()]);
   const [loading, setLoading] = useState(false);
+  const [model, setModel] = useState<string>('');
+  const [modelGroups, setModelGroups] = useState<ModelGroup[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchModels()
+      .then((data) => {
+        setModelGroups(data.groups);
+        setModel(data.default);
+      })
+      .catch(() => {
+        setModelGroups([
+          { provider: 'deepseek', providerLabel: 'DeepSeek', models: [{ id: 'deepseek-v4-flash', name: 'Flash', provider: 'deepseek', providerLabel: 'DeepSeek' }] },
+        ]);
+        setModel('deepseek-v4-flash');
+      });
+  }, []);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
+  const handleModelChange = useCallback((newModel: string) => {
+    setModel(newModel);
+    setMessages([createWelcome()]);
+    msgIdRef.current = 1;
+  }, []);
+
   const handleSend = useCallback(async (content: string) => {
     const userMsg: Message = {
-      id: String(msgId++),
+      id: String(msgIdRef.current++),
       role: 'user',
       content,
       timestamp: Date.now(),
@@ -38,7 +63,7 @@ export default function Home({ isDark, onToggleTheme }: HomeProps) {
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
-    const aiId = String(msgId++);
+    const aiId = String(msgIdRef.current++);
     const aiMsg: Message = { id: aiId, role: 'assistant', content: '', timestamp: Date.now() };
     setMessages((prev) => [...prev, aiMsg]);
 
@@ -55,6 +80,7 @@ export default function Home({ isDark, onToggleTheme }: HomeProps) {
           );
         },
         () => setLoading(false),
+        model || undefined,
       );
     } catch {
       setMessages((prev) =>
@@ -64,11 +90,17 @@ export default function Home({ isDark, onToggleTheme }: HomeProps) {
       );
       setLoading(false);
     }
-  }, [messages]);
+  }, [messages, model]);
 
   return (
     <Layout className="chat-container">
-      <ChatHeader isDark={isDark} onToggleTheme={onToggleTheme} />
+      <ChatHeader
+        isDark={isDark}
+        onToggleTheme={onToggleTheme}
+        model={model}
+        modelGroups={modelGroups}
+        onModelChange={handleModelChange}
+      />
       <div ref={listRef} className="message-list">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} message={msg} />

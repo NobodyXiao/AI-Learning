@@ -5,11 +5,30 @@ interface ChatMessage {
   content: string;
 }
 
-export async function sendChatMessage(messages: ChatMessage[]): Promise<string> {
+export interface ModelInfo {
+  id: string;
+  name: string;
+  provider: string;
+  providerLabel: string;
+}
+
+export interface ModelGroup {
+  provider: string;
+  providerLabel: string;
+  models: ModelInfo[];
+}
+
+export async function fetchModels(): Promise<{ default: string; groups: ModelGroup[]; models: ModelInfo[] }> {
+  const res = await fetch(`${API_BASE}/models`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function sendChatMessage(messages: ChatMessage[], model?: string): Promise<string> {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, model }),
   });
 
   if (!res.ok) {
@@ -25,11 +44,12 @@ export async function streamChatMessage(
   messages: ChatMessage[],
   onChunk: (text: string) => void,
   onDone: () => void,
+  model?: string,
 ): Promise<void> {
   const res = await fetch(`${API_BASE}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, model }),
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

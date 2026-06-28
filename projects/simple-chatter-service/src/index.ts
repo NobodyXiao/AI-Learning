@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import chatRouter from './routes/chat';
+import { MODEL_GROUPS, getAllModels } from './models/registry';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3002;
@@ -15,9 +16,32 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
 
+app.get('/api/models', (_req, res) => {
+  const defaultModel = process.env.ANTHROPIC_MODEL || 'deepseek-v4-flash';
+  res.json({
+    default: defaultModel,
+    groups: MODEL_GROUPS,
+    models: getAllModels(),
+  });
+});
+
 app.listen(PORT, () => {
+  const configured: string[] = [];
+  const providers = [
+    { name: 'DeepSeek', prefix: 'ANTHROPIC' },
+    { name: '通义千问',  prefix: 'QWEN' },
+    { name: '豆包',     prefix: 'DOUBAO' },
+    { name: 'Kimi',     prefix: 'KIMI' },
+  ];
+  for (const p of providers) {
+    if (process.env[`${p.prefix}_API_KEY`]) {
+      configured.push(`${p.name} ✅`);
+    } else {
+      configured.push(`${p.name} ❌`);
+    }
+  }
+
   console.log(`Simple Chatter Service running on http://localhost:${PORT}`);
-  console.log(`Model: ${process.env.ANTHROPIC_MODEL || process.env.OPENAI_MODEL || 'claude-sonnet-4-20250514'}`);
-  console.log(`API key set: ${Boolean(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY)}`);
-  console.log(`Base URL: ${process.env.ANTHROPIC_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.anthropic.com'}`);
+  console.log(`Default model: ${process.env.ANTHROPIC_MODEL || 'deepseek-v4-flash'}`);
+  console.log(`Providers: ${configured.join('  ')}`);
 });

@@ -1,12 +1,12 @@
 import { Router, Request, Response } from "express";
-import { getChatResponseWithTools } from "../services/anthropic";
+import { getChatResponseWithTools } from "../services/ai";
 import type { ChatRequest } from "../types/chat";
 
 const router = Router();
 
 router.post("/chat", async (req: Request, res: Response) => {
   try {
-    const { messages } = req.body as ChatRequest;
+    const { messages, model } = req.body as ChatRequest;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       res
@@ -15,7 +15,7 @@ router.post("/chat", async (req: Request, res: Response) => {
       return;
     }
 
-    const reply = await getChatResponseWithTools(messages);
+    const reply = await getChatResponseWithTools(messages, undefined, model);
     res.json({ reply });
   } catch (err) {
     console.error("Chat error:", err);
@@ -25,7 +25,7 @@ router.post("/chat", async (req: Request, res: Response) => {
 
 router.post("/chat/stream", async (req: Request, res: Response) => {
   try {
-    const { messages } = req.body as ChatRequest;
+    const { messages, model } = req.body as ChatRequest;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       res
@@ -44,7 +44,7 @@ router.post("/chat/stream", async (req: Request, res: Response) => {
       res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
     };
 
-    await getChatResponseWithTools(messagesCopy, onChunk);
+    await getChatResponseWithTools(messagesCopy, onChunk, model);
 
     res.write("data: [DONE]\n\n");
     res.end();

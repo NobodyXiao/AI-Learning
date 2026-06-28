@@ -5,8 +5,14 @@ export interface ChatMessage {
 
 export interface ChatRequest {
   messages: ChatMessage[];
+  model?: string;
 }
 
 export interface ChatResponse {
   reply: string;
+}
+
+export interface ModelInfo {
+  id: string;
+  name: string;
 }

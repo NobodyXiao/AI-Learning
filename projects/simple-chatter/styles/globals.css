@@ -67,9 +67,11 @@ body {
   font-size: 11px;
   margin-top: 4px;
   opacity: 0.6;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .message-row.user .message-time {
-  text-align: right;
+  justify-content: flex-end;
 }

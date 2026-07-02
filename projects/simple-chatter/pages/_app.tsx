@@ -1,6 +1,6 @@
 import type { AppProps } from 'next/app';
 import { useState } from 'react';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App as AntApp } from 'antd';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -13,7 +13,9 @@ export default function App({ Component, pageProps }: AppProps) {
         token: { colorPrimary: '#1677ff' },
       }}
     >
-      <Component {...pageProps} isDark={isDark} onToggleTheme={() => setIsDark((prev) => !prev)} />
+      <AntApp>
+        <Component {...pageProps} isDark={isDark} onToggleTheme={() => setIsDark((prev) => !prev)} />
+      </AntApp>
     </ConfigProvider>
   );
 }

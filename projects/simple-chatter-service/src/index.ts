@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import chatRouter from './routes/chat';
+import ttsRouter from './routes/tts';
 import { MODEL_GROUPS, getAllModels } from './models/registry';
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(cors({ origin: true }));
 app.use(express.json());
 
 app.use('/api', chatRouter);
+app.use('/api', ttsRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });

@@ -102,8 +102,18 @@ export default function Home({ isDark, onToggleTheme }: HomeProps) {
         onModelChange={handleModelChange}
       />
       <div ref={listRef} className="message-list">
-        {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
+        {messages.map((msg, idx) => (
+          <ChatMessage
+            key={msg.id}
+            message={msg}
+            autoSpeak={
+              !loading &&
+              msg.role === "assistant" &&
+              msg.content.length > 0 &&
+              idx === messages.length - 1 &&
+              idx > 0
+            }
+          />
         ))}
         {loading && (
           <div style={{ alignSelf: 'flex-start', padding: 8 }}>
